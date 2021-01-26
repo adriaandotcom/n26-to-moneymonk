@@ -72,17 +72,21 @@
           <small>
             The source code of this app is not minified and
             <a href="https://github.com/adriaanvanrossum/n26-to-moneymonk"
-              >available on GitHub</a
-            >.</small
-          >
+              >on GitHub</a
+            >. <span id="commit"></span
+          ></small>
         </p>
       </form>
     </main>
     <script src="/assets/papaparse.js"></script>
     <script src="/assets/app.js"></script>
     <script type="module">
-      import git from "/hash.js";
-      console.log(git);
+      import commits from "/commits.js";
+      const { current, previous } = commits;
+      const url = `https://github.com/adriaanvanrossum/n26-to-moneymonk/compare/${previous}...${current}`;
+      document.getElementById(
+        "commit"
+      ).innerHTML = `<a href="${url}">Last commit ${current.slice(0, 8)}</a>`;
     </script>
   </body>
 </html>
