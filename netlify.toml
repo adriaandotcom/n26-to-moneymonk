@@ -1,7 +1,7 @@
 [build]
   # base = "public/"
   publish = "public/"
-  command = "echo 'export default { prev: \"$CACHED_COMMIT_REF\", curr: \"$COMMIT_REF\" }' > ./public/hash.js"
+  command = 'echo "export default { predddv: \"$CACHED_COMMIT_REF\", curr: \"$COMMIT_REF\" }" > ./public/hash.js'
 
 [dev]
   port = 8888
