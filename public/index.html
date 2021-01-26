@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="Author" content="eerstelinks.nl" />
+    <title>Convert your N26 CSV to MoneyMonk CSV in the browser</title>
+    <style>
+      html {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      }
+      form {
+        display: block;
+        width: 1000px;
+        max-width: calc(100% - 2rem);
+        margin: 4rem auto 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <form>
+      <h1>Convert your N26 CSV to MoneyMonk CSV in the browser</h1>
+      <p>
+        No data will end up on our servers, it's just happening in the browser.
+      </p>
+      <p>
+        N26 IBAN:
+        <input id="iban" type="text" placeholder="DE00000000000000000000" />
+      </p>
+      <p>
+        <label for="avatar">Select your N26 CSV:</label>
+        <input type="file" id="file" accept="text/csv" />
+      </p>
+      <p><input type="checkbox" id="header" checked />First row is header</p>
+      <p><a style="display: none" id="download">Download</a></p>
+    </form>
+    <script src="/assets/papaparse.js"></script>
+    <script>
+      const input = [
+        "Date",
+        "Payee",
+        "Account number",
+        "Transaction type",
+        "Payment reference",
+        "Category",
+        "Amount (EUR)",
+        "Amount (Foreign Currency)",
+        "Type Foreign Currency",
+        "Exchange Rate",
+      ];
+
+      const downloadElement = document.getElementById("download");
+      const checkboxElement = document.getElementById("header");
+      const inputElement = document.getElementById("file");
+      const ibanElement = document.getElementById("iban");
+
+      const ibanSaved = window.localStorage.getItem("n26iban");
+      if (ibanSaved) ibanElement.value = ibanSaved;
+
+      async function digestMessage(message) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(message);
+        const buffer = await crypto.subtle.digest("SHA-256", data);
+        return Array.prototype.map
+          .call(new Uint8Array(buffer), (x) =>
+            ("00" + x.toString(16)).slice(-2)
+          )
+          .join("");
+      }
+
+      inputElement.addEventListener("change", handleFiles, false);
+
+      function handleFiles() {
+        const file = this.files[0];
+
+        const iban = ibanElement.value
+          ? ibanElement.value.trim().replace(/[^a-zA-Z0-9]+/, "")
+          : null;
+
+        if (!iban) {
+          alert("No N26 IBAN filled in");
+          return;
+        }
+
+        window.localStorage.setItem("n26iban", iban);
+
+        async function convertCSV(results) {
+          const json = await Promise.all(
+            results.data.map(async (row) => {
+              const amount = parseFloat(row["Amount (EUR)"]);
+              const hash = await digestMessage(JSON.stringify(row));
+              const reference = `C0${hash.slice(0, 14)}`.toUpperCase();
+              const date = row["Date"].split("-").reverse().join("-");
+
+              return {
+                Rekeningnummer: iban,
+                Transactiedatum: date,
+                Valutacode: "EUR",
+                CreditDebet: amount >= 0 ? "D" : "C",
+                Bedrag: amount >= 0 ? amount : amount * -1,
+                Tegenrekeningnummer: row["Account number"],
+                Tegenrekeninghouder: row["Payee"],
+                Valutadatum: date,
+                Betaalwijze: row["Transaction type"],
+                Omschrijving: row["Payment reference"],
+                "Type betaling": row["Transaction type"],
+                Machtigingsnummer: null,
+                "Incassant ID": null,
+                Adres: null,
+                Referentie: reference,
+                Boekdatum: date,
+              };
+            })
+          );
+
+          const csvData = Papa.unparse(json, {
+            header: true,
+            skipEmptyLines: true,
+          });
+
+          const fileName = `${new Date()
+            .toISOString()
+            .slice(0, 10)}-knab-export.csv`;
+          const fileContent = `KNAB EXPORT\r\n${csvData}`;
+          const csv = new Blob([fileContent], { type: "text/csv" });
+          const data = window.URL.createObjectURL(csv);
+          downloadElement.setAttribute("href", data);
+          downloadElement.setAttribute("download", fileName);
+          downloadElement.style.display = "block";
+        }
+
+        Papa.parse(file, {
+          header: checkboxElement.value === "on",
+          skipEmptyLines: true,
+          complete: convertCSV,
+        });
+      }
+    </script>
+  </body>
+</html>
