@@ -7,7 +7,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/assets/mvp.css" />
     <style>
-      form {
+      html,
+      body {
+        padding: 0;
+        margin: 0;
+      }
+      main {
         display: block;
         width: 600px;
         max-width: calc(100% - 2rem);
@@ -22,37 +27,57 @@
       hr {
         margin: 3rem 0 1rem;
       }
+      @media only screen and (max-width: 600px) {
+        main {
+          margin: 1rem auto;
+          padding: 0;
+        }
+      }
     </style>
   </head>
   <body>
-    <form>
-      <h1 class="mt-0">Convert your N26 CSV to MoneyMonk CSV in the browser</h1>
-      <p>
-        No data will end up on our servers, it's only happening in the browser.
-      </p>
-      <p>
-        <label for="iban">N26 IBAN</label>
-        <input id="iban" type="text" placeholder="DE00000000000000000000" />
-      </p>
-      <p>
-        <label for="avatar">Select your N26 CSV</label>
-        <input type="file" id="file" accept="text/csv" />
-      </p>
-      <p>
-        <input type="checkbox" id="header" checked />
-        <label for="header">First row is header</label>
-      </p>
-      <p><a style="display: none" id="download">Download</a></p>
-      <hr />
-      <p class="mb-0">
-        <small>
-          The source code of this app is not minified and
+    <main>
+      <form>
+        <h1 class="mt-0">
+          Convert your N26 CSV to MoneyMonk CSV in the browser
+        </h1>
+        <p>
+          Your data will not leave your browser. We don't send anything to our
+          servers. The source code of this app
           <a href="https://github.com/adriaanvanrossum/n26-to-moneymonk"
-            >available on GitHub</a
-          >.</small
-        >
-      </p>
-    </form>
+            >is public</a
+          >.
+        </p>
+        <p>
+          Useful for customers of MoneyMonk who use the
+          <a href="https://n26.com/">N26 bank</a>.
+        </p>
+
+        <h2>Convert your N26 CSV</h2>
+        <p>
+          <label for="iban">N26 IBAN</label>
+          <input id="iban" type="text" placeholder="DE00000000000000000000" />
+        </p>
+        <p>
+          <label for="avatar">Select your N26 CSV</label>
+          <input type="file" id="file" accept="text/csv" />
+        </p>
+        <p>
+          <input type="checkbox" id="header" checked />
+          <label for="header">First row is header</label>
+        </p>
+        <p><a style="display: none" id="download">Download</a></p>
+        <hr />
+        <p class="mb-0">
+          <small>
+            The source code of this app is not minified and
+            <a href="https://github.com/adriaanvanrossum/n26-to-moneymonk"
+              >available on GitHub</a
+            >.</small
+          >
+        </p>
+      </form>
+    </main>
     <script src="/assets/papaparse.js"></script>
     <script src="/assets/app.js"></script>
   </body>

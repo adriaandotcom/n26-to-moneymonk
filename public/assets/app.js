@@ -32,14 +32,15 @@ function handleFiles() {
   window.localStorage.setItem("n26iban", iban);
 
   async function convertCSV(results) {
+    let columns = 0;
+
     const json = await Promise.all(
       results.data.map(async (row) => {
         const amount = parseFloat(row["Amount (EUR)"]);
         const hash = await digestMessage(JSON.stringify(row));
         const reference = `C0${hash.slice(0, 14)}`.toUpperCase();
         const date = row["Date"].split("-").reverse().join("-");
-
-        return {
+        const object = {
           Rekeningnummer: iban,
           Transactiedatum: date,
           Valutacode: "EUR",
@@ -56,7 +57,12 @@ function handleFiles() {
           Adres: null,
           Referentie: reference,
           Boekdatum: date,
+
+          // The last column should be empty
+          "": null,
         };
+        columns = Object.keys(object).length;
+        return object;
       })
     );
 
@@ -65,8 +71,12 @@ function handleFiles() {
       skipEmptyLines: true,
     });
 
+    const commas = Array(columns - 1)
+      .fill(",")
+      .join("");
     const fileName = `${new Date().toISOString().slice(0, 10)}-knab-export.csv`;
-    const fileContent = `KNAB EXPORT\r\n${csvData}`;
+    const fileContent = `KNAB EXPORT${commas}\r\n${csvData}`;
+
     const csv = new Blob([fileContent], { type: "text/csv" });
     const data = window.URL.createObjectURL(csv);
     downloadElement.setAttribute("href", data);
