@@ -44,7 +44,7 @@ function handleFiles() {
           Rekeningnummer: iban,
           Transactiedatum: date,
           Valutacode: "EUR",
-          CreditDebet: amount >= 0 ? "D" : "C",
+          CreditDebet: amount >= 0 ? "C" : "D",
           Bedrag: amount >= 0 ? amount : amount * -1,
           Tegenrekeningnummer: row["Account number"],
           Tegenrekeninghouder: row["Payee"],
